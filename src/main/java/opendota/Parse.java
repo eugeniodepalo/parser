@@ -811,10 +811,17 @@ public class Parse {
         }
     }
 
-    private List<Item> getHeroInventory(Context ctx, Entity eHero) {
-        List<Item> inventoryList = new ArrayList<>(6);
+    private static final int[] INVENTORY_SLOTS = {
+        0, 1, 2, 3, 4, 5,  // main inventory
+        6, 7, 8,            // backpack
+        15,                  // TP scroll
+        16,                  // neutral item
+    };
 
-        for (int i = 0; i < 8; i++) {
+    private List<Item> getHeroInventory(Context ctx, Entity eHero) {
+        List<Item> inventoryList = new ArrayList<>(INVENTORY_SLOTS.length);
+
+        for (int i : INVENTORY_SLOTS) {
             try {
                 Item item = getHeroItem(ctx, eHero, i);
                 if (item != null) {

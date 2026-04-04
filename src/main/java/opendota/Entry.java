@@ -43,7 +43,7 @@ public class Entry implements Cloneable {
     public Integer hero_id;
     public Integer variant;
     public Integer facet_hero_id;
-    public transient List<Item> hero_inventory;
+    public List<Item> hero_inventory;
     public Integer itemslot;
     public Integer charges;
     public Integer secondary_charges;
