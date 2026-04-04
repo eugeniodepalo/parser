@@ -39,6 +39,12 @@ public class Entry implements Cloneable {
     public Float x;
     public Float y;
     public Float z;
+    public Float attacker_x;
+    public Float attacker_y;
+    public Float target_x;
+    public Float target_y;
+    public Integer ability_id;
+    public Integer target_index;
     public Float stuns;
     public Integer hero_id;
     public Integer variant;

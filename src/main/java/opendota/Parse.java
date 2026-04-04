@@ -83,6 +83,7 @@ public class Parse {
     HashMap<Long, Integer> steamid_to_playerslot = new HashMap<Long, Integer>();
     HashMap<Integer, Integer> cosmeticsMap = new HashMap<Integer, Integer>();
     HashMap<Integer, Integer> dotaplusxpMap = new HashMap<Integer, Integer>(); // playerslot, xp
+    HashMap<Integer, Integer> slot_to_hero_handle = new HashMap<Integer, Integer>();
     HashMap<Integer, Integer> ward_ehandle_to_slot = new HashMap<Integer, Integer>();
     InputStream is = null;
     OutputStream os = null;
@@ -203,16 +204,19 @@ public class Parse {
     public void onSpectatorPlayerUnitOrders(Context ctx, CDOTAUserMsg_SpectatorPlayerUnitOrders message) {
         Entry entry = new Entry(time);
         entry.type = "actions";
-        // the entindex points to a CDOTAPlayer. This is probably the player that gave
-        // the order.
         Entity e = ctx.getProcessor(Entities.class).getByIndex(message.getEntindex());
         entry.slot = getPlayerSlotFromEntity(ctx, e);
-        // Integer handle = (Integer)getEntityProperty(e, "m_hAssignedHero", null);
-        // Entity h = ctx.getProcessor(Entities.class).getByHandle(handle);
-        // System.err.println(h.getDtClass().getDtName());
-        // break actions into types?
         entry.key = String.valueOf(message.getOrderType());
-        // System.err.println(message);
+        if (message.hasPosition()) {
+            entry.x = message.getPosition().getX();
+            entry.y = message.getPosition().getY();
+        }
+        if (message.getTargetIndex() != 0) {
+            entry.target_index = message.getTargetIndex();
+        }
+        if (message.getAbilityId() >= 0) {
+            entry.ability_id = message.getAbilityId();
+        }
         output(entry);
     }
 
@@ -381,6 +385,16 @@ public class Parse {
                 }
             }
             if (cle.getType().ordinal() <= 19) {
+                Float[] attackerPos = getHeroPosition(ctx, combatLogEntry.attackername);
+                if (attackerPos != null) {
+                    combatLogEntry.attacker_x = attackerPos[0];
+                    combatLogEntry.attacker_y = attackerPos[1];
+                }
+                Float[] targetPos = getHeroPosition(ctx, combatLogEntry.targetname);
+                if (targetPos != null) {
+                    combatLogEntry.target_x = targetPos[0];
+                    combatLogEntry.target_y = targetPos[1];
+                }
                 output(combatLogEntry);
             }
         } catch (Exception e) {
@@ -638,6 +652,7 @@ public class Parse {
                 for (int i = 0; i < numPlayers; i++) {
                     Integer hero = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_nSelectedHeroID", validIndices[i]);
                     int handle = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_hSelectedHero", validIndices[i]);
+                    slot_to_hero_handle.put(i, handle);
                     int playerTeam = getEntityProperty(pr, "m_vecPlayerData.%i.m_iPlayerTeam", validIndices[i]);
                     int teamSlot = getEntityProperty(pr, "m_vecPlayerTeamData.%i.m_iTeamSlot", validIndices[i]);
 
@@ -930,6 +945,29 @@ public class Parse {
         ability.abilityLevel = eAbility.getProperty("m_iLevel");
 
         return ability;
+    }
+
+    private Float[] getHeroPosition(Context ctx, String heroName) {
+        Integer slot = name_to_slot.get(heroName);
+        if (slot == null) {
+            return null;
+        }
+        Integer handle = slot_to_hero_handle.get(slot);
+        if (handle == null) {
+            return null;
+        }
+        Entity e = ctx.getProcessor(Entities.class).getByHandle(handle);
+        if (e == null) {
+            return null;
+        }
+        Integer cx = getEntityProperty(e, "CBodyComponent.m_cellX", null);
+        Integer cy = getEntityProperty(e, "CBodyComponent.m_cellY", null);
+        if (cx == null || cy == null) {
+            return null;
+        }
+        Float vx = getEntityProperty(e, "CBodyComponent.m_vecX", null);
+        Float vy = getEntityProperty(e, "CBodyComponent.m_vecY", null);
+        return new Float[] { getPreciseLocation(cx, vx), getPreciseLocation(cy, vy) };
     }
 
     public <T> T getEntityProperty(Entity e, String property, Integer idx) {
