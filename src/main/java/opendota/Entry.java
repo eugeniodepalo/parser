@@ -50,6 +50,7 @@ public class Entry implements Cloneable {
     public Integer variant;
     public Integer facet_hero_id;
     public List<Item> hero_inventory;
+    public List<CreepPos> creeps;
     public Integer itemslot;
     public Integer charges;
     public Integer secondary_charges;

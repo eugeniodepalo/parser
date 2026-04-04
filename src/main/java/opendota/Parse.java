@@ -48,6 +48,40 @@ public class Parse {
       return (cell*128.0f+vec)/128;
     }
 
+    private void collectCreeps(Context ctx, List<CreepPos> out, String dtName, String kind) {
+        Iterator<Entity> it = ctx.getProcessor(Entities.class).getAllByDtName(dtName);
+        while (it.hasNext()) {
+            Entity e = it.next();
+            Integer lifeState = getEntityProperty(e, "m_lifeState", null);
+            if (lifeState == null || lifeState != 0) {
+                continue;
+            }
+            Integer cx = getEntityProperty(e, "CBodyComponent.m_cellX", null);
+            Integer cy = getEntityProperty(e, "CBodyComponent.m_cellY", null);
+            Float vx = getEntityProperty(e, "CBodyComponent.m_vecX", null);
+            Float vy = getEntityProperty(e, "CBodyComponent.m_vecY", null);
+            if (cx == null || cy == null || vx == null || vy == null) {
+                continue;
+            }
+            Integer team = getEntityProperty(e, "m_iTeamNum", null);
+            Integer hp = getEntityProperty(e, "m_iHealth", null);
+            Integer maxHp = getEntityProperty(e, "m_iMaxHealth", null);
+            if (team == null || hp == null || maxHp == null || maxHp <= 0) {
+                continue;
+            }
+            if (team != 2 && team != 3) {
+                continue;
+            }
+            CreepPos c = new CreepPos();
+            c.x = getPreciseLocation(cx, vx);
+            c.y = getPreciseLocation(cy, vy);
+            c.team = team;
+            c.kind = kind;
+            c.hp_frac = Math.max(0f, Math.min(1f, hp.floatValue() / maxHp.floatValue()));
+            out.add(c);
+        }
+    }
+
     private class Ability {
         String id;
         Integer abilityLevel;
@@ -807,6 +841,16 @@ public class Parse {
                     }
                     output(entry);
                 }
+
+                Entry creepEntry = new Entry(time);
+                creepEntry.type = "creeps";
+                creepEntry.creeps = new ArrayList<>();
+                collectCreeps(ctx, creepEntry.creeps, "CDOTA_BaseNPC_Creep_Lane", "lane");
+                collectCreeps(ctx, creepEntry.creeps, "CDOTA_BaseNPC_Creep_Siege", "siege");
+                if (!creepEntry.creeps.isEmpty()) {
+                    output(creepEntry);
+                }
+
                 nextInterval += INTERVAL;
             }
 
