@@ -930,7 +930,7 @@ public class Parse {
         if (eItem == null) {
             throw new UnknownItemFoundException(String.format("Can't find item by its handle (%d)", hItem));
         }
-        String itemName = stEntityNames.getNameByIndex(eItem.getProperty("m_pEntity.m_nameStringableIndex"));
+        String itemName = stEntityNames.getNameByIndex(eItem.getProperty("m_pEntity.m_nameStringTableIndex"));
         if (itemName == null) {
             throw new UnknownItemFoundException("Can't get item name from EntityName string table");
         }
@@ -979,7 +979,7 @@ public class Parse {
         if (eAbility == null) {
             throw new UnknownAbilityFoundException(String.format("Can't find ability by its handle (%d)", hAbility));
         }
-        String abilityName = stEntityNames.getNameByIndex(eAbility.getProperty("m_pEntity.m_nameStringableIndex"));
+        String abilityName = stEntityNames.getNameByIndex(eAbility.getProperty("m_pEntity.m_nameStringTableIndex"));
         if (abilityName == null) {
             throw new UnknownAbilityFoundException("Can't get ability name from EntityName string table");
         }
