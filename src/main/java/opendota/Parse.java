@@ -773,6 +773,10 @@ public class Parse {
                         entry.variant = variant;
                         entry.facet_hero_id = facet_hero_id;
                         entry.life_state = getEntityProperty(e, "m_lifeState", null);
+                        entry.hp = getEntityProperty(e, "m_iHealth", null);
+                        entry.max_hp = getEntityProperty(e, "m_iMaxHealth", null);
+                        entry.mana = getEntityProperty(e, "m_flMana", null);
+                        entry.max_mana = getEntityProperty(e, "m_flMaxMana", null);
                         // check if hero has been assigned to entity
                         if (hero > 0) {
                             // get the hero's entity name, ex: CDOTA_Hero_Zuus

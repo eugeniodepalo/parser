@@ -55,6 +55,10 @@ public class Entry implements Cloneable {
     public Integer charges;
     public Integer secondary_charges;
     public Integer life_state;
+    public Integer hp;
+    public Integer max_hp;
+    public Float mana;
+    public Float max_mana;
     public Integer level;
     public Integer kills;
     public Integer deaths;
