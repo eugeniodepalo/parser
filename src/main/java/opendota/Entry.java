@@ -59,6 +59,8 @@ public class Entry implements Cloneable {
     public Integer max_hp;
     public Float mana;
     public Float max_mana;
+    public String hero_name;
+    public List<String> ability_names;
     public List<Integer> ability_levels;
     public List<Float> ability_cooldowns;
     public List<String> modifiers;

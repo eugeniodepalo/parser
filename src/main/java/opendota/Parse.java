@@ -794,6 +794,7 @@ public class Parse {
                             // populate for combat log mapping
                             name_to_slot.put(combatLogName, entry.slot);
                             name_to_slot.put(combatLogName2, entry.slot);
+                            entry.hero_name = combatLogName;
 
                             abilities = getHeroAbilities(ctx, e);
                             for (Ability ability : abilities) {
@@ -811,32 +812,30 @@ public class Parse {
                                 }
                             }
 
-                            // Populate ability_levels and ability_cooldowns (first 6 slots: Q/W/E/D/F/R)
-                            entry.ability_levels = new java.util.ArrayList<>(6);
-                            entry.ability_cooldowns = new java.util.ArrayList<>(6);
-                            for (int ai = 0; ai < 6; ai++) {
-                                if (ai < abilities.size()) {
-                                    entry.ability_levels.add(abilities.get(ai).abilityLevel);
-                                    entry.ability_cooldowns.add(abilities.get(ai).cooldown);
-                                } else {
-                                    entry.ability_levels.add(0);
-                                    entry.ability_cooldowns.add(0.0f);
-                                }
+                            // Populate named ability states for all hero abilities
+                            entry.ability_names = new java.util.ArrayList<>();
+                            entry.ability_levels = new java.util.ArrayList<>();
+                            entry.ability_cooldowns = new java.util.ArrayList<>();
+                            for (Ability ability : abilities) {
+                                entry.ability_names.add(ability.id);
+                                entry.ability_levels.add(ability.abilityLevel);
+                                entry.ability_cooldowns.add(ability.cooldown);
                             }
 
-                            // Populate active modifiers from the hero entity
+                            // Populate active modifiers by scanning CDOTA_Buff entities
+                            // whose parent handle matches this hero entity.
                             entry.modifiers = new java.util.ArrayList<>();
-                            for (int mi = 0; mi < 32; mi++) {
+                            for (Entity buffEntity : ctx.getProcessor(Entities.class).getAllByDtName("CDOTA_Buff")) {
                                 try {
-                                    String propKey = "m_hModifierParent";
-                                    Integer hBuff = getEntityProperty(e, "m_modifierManager.m_vecBuffs." + Util.arrayIdxToString(mi) + ".m_hSerialNumber", null);
-                                    if (hBuff == null) break;
-                                    String modName = getEntityProperty(e, "m_modifierManager.m_vecBuffs." + Util.arrayIdxToString(mi) + ".m_name", null);
-                                    if (modName != null && !modName.isEmpty()) {
-                                        entry.modifiers.add(modName);
+                                    Integer parentHandle = getEntityProperty(buffEntity, "m_hParent", null);
+                                    if (parentHandle != null && parentHandle == handle) {
+                                        String modName = getEntityProperty(buffEntity, "m_name", null);
+                                        if (modName != null && !modName.isEmpty()) {
+                                            entry.modifiers.add(modName);
+                                        }
                                     }
                                 } catch (Exception ex) {
-                                    break;
+                                    // skip unreadable buff entities
                                 }
                             }
 
