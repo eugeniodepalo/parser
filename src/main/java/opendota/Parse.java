@@ -85,7 +85,7 @@ public class Parse {
     private class Ability {
         String id;
         Integer abilityLevel;
-
+        Float cooldown;
     }
 
     private class UnknownItemFoundException extends RuntimeException {
@@ -811,6 +811,35 @@ public class Parse {
                                 }
                             }
 
+                            // Populate ability_levels and ability_cooldowns (first 6 slots: Q/W/E/D/F/R)
+                            entry.ability_levels = new java.util.ArrayList<>(6);
+                            entry.ability_cooldowns = new java.util.ArrayList<>(6);
+                            for (int ai = 0; ai < 6; ai++) {
+                                if (ai < abilities.size()) {
+                                    entry.ability_levels.add(abilities.get(ai).abilityLevel);
+                                    entry.ability_cooldowns.add(abilities.get(ai).cooldown);
+                                } else {
+                                    entry.ability_levels.add(0);
+                                    entry.ability_cooldowns.add(0.0f);
+                                }
+                            }
+
+                            // Populate active modifiers from the hero entity
+                            entry.modifiers = new java.util.ArrayList<>();
+                            for (int mi = 0; mi < 32; mi++) {
+                                try {
+                                    String propKey = "m_hModifierParent";
+                                    Integer hBuff = getEntityProperty(e, "m_modifierManager.m_vecBuffs." + Util.arrayIdxToString(mi) + ".m_hSerialNumber", null);
+                                    if (hBuff == null) break;
+                                    String modName = getEntityProperty(e, "m_modifierManager.m_vecBuffs." + Util.arrayIdxToString(mi) + ".m_name", null);
+                                    if (modName != null && !modName.isEmpty()) {
+                                        entry.modifiers.add(modName);
+                                    }
+                                } catch (Exception ex) {
+                                    break;
+                                }
+                            }
+
                             entry.hero_inventory = getHeroInventory(ctx, e);
                             if (time - gameStartTime - 1 == 0) {
                                 for (Item item : entry.hero_inventory) {
@@ -991,6 +1020,14 @@ public class Parse {
         Ability ability = new Ability();
         ability.id = abilityName;
         ability.abilityLevel = eAbility.getProperty("m_iLevel");
+        try {
+            ability.cooldown = getEntityProperty(eAbility, "m_fCooldown", null);
+        } catch (Exception ex) {
+            ability.cooldown = 0.0f;
+        }
+        if (ability.cooldown == null) {
+            ability.cooldown = 0.0f;
+        }
 
         return ability;
     }
