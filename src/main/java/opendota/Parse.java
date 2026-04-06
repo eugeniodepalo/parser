@@ -825,8 +825,10 @@ public class Parse {
                             // Populate active modifiers by scanning CDOTA_Buff entities
                             // whose parent handle matches this hero entity.
                             entry.modifiers = new java.util.ArrayList<>();
-                            for (Entity buffEntity : ctx.getProcessor(Entities.class).getAllByDtName("CDOTA_Buff")) {
+                            java.util.Iterator<Entity> buffIter = ctx.getProcessor(Entities.class).getAllByDtName("CDOTA_Buff");
+                            while (buffIter.hasNext()) {
                                 try {
+                                    Entity buffEntity = buffIter.next();
                                     Integer parentHandle = getEntityProperty(buffEntity, "m_hParent", null);
                                     if (parentHandle != null && parentHandle == handle) {
                                         String modName = getEntityProperty(buffEntity, "m_name", null);
