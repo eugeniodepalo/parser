@@ -822,25 +822,6 @@ public class Parse {
                                 entry.ability_cooldowns.add(ability.cooldown);
                             }
 
-                            // Populate active modifiers by scanning CDOTA_Buff entities
-                            // whose parent handle matches this hero entity.
-                            entry.modifiers = new java.util.ArrayList<>();
-                            java.util.Iterator<Entity> buffIter = ctx.getProcessor(Entities.class).getAllByDtName("CDOTA_Buff");
-                            while (buffIter.hasNext()) {
-                                try {
-                                    Entity buffEntity = buffIter.next();
-                                    Integer parentHandle = getEntityProperty(buffEntity, "m_hParent", null);
-                                    if (parentHandle != null && parentHandle == handle) {
-                                        String modName = getEntityProperty(buffEntity, "m_name", null);
-                                        if (modName != null && !modName.isEmpty()) {
-                                            entry.modifiers.add(modName);
-                                        }
-                                    }
-                                } catch (Exception ex) {
-                                    // skip unreadable buff entities
-                                }
-                            }
-
                             entry.hero_inventory = getHeroInventory(ctx, e);
                             if (time - gameStartTime - 1 == 0) {
                                 for (Item item : entry.hero_inventory) {
